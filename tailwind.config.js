@@ -6,10 +6,12 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        orange: {
-          500: '#f97316',
-          600: '#ea580c',
-          700: '#c2410c',
+        starz: {
+          red: '#D8232A',
+          'red-dark': '#B01920',
+          blue: '#1A42B8',
+          'blue-dark': '#0F215A',
+          navy: '#0A1432',
         }
       }
     },
