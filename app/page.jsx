@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Search, Calendar, MapPin, Trophy, Users, AlertCircle, Star, Zap } from 'lucide-react';
+import { Search, Calendar, MapPin, Trophy, Users, AlertCircle, Star, Zap, User } from 'lucide-react';
 
 export default function RosterApp() {
   const [data, setData] = useState(null);
@@ -55,12 +55,20 @@ export default function RosterApp() {
     const query = searchQuery.toLowerCase();
     
     const matchInCurrent = selectedTeam?.players?.some(p => 
-      p.name.toLowerCase().includes(query) || (p.number && p.number.toString().includes(query))
+      p.name.toLowerCase().includes(query) || 
+      (p.number && p.number.toString().includes(query)) ||
+      (p.school && p.school.toLowerCase().includes(query)) ||
+      (p.position && p.position.toLowerCase().includes(query))
     );
 
     if (!matchInCurrent) {
       const foundTeam = allTeams.find(team => 
-        team.players.some(p => p.name.toLowerCase().includes(query) || (p.number && p.number.toString().includes(query)))
+        team.players.some(p => 
+          p.name.toLowerCase().includes(query) || 
+          (p.number && p.number.toString().includes(query)) ||
+          (p.school && p.school.toLowerCase().includes(query)) ||
+          (p.position && p.position.toLowerCase().includes(query))
+        )
       );
       if (foundTeam) {
         setActiveTeamId(foundTeam.id);
@@ -72,7 +80,12 @@ export default function RosterApp() {
   const filteredPlayers = selectedTeam?.players?.filter(player => {
     if (!searchQuery.trim()) return true;
     const query = searchQuery.toLowerCase();
-    return player.name.toLowerCase().includes(query) || (player.number && player.number.toString().includes(query));
+    return (
+      player.name.toLowerCase().includes(query) || 
+      (player.number && player.number.toString().includes(query)) ||
+      (player.school && player.school.toLowerCase().includes(query)) ||
+      (player.position && player.position.toLowerCase().includes(query))
+    );
   }) || [];
 
   return (
@@ -81,7 +94,7 @@ export default function RosterApp() {
       {/* Top Accent Stripe */}
       <div className="h-1.5 bg-gradient-to-r from-starz-red via-starz-blue to-starz-red z-40 relative no-print shadow-md" />
 
-      {/* Main Light Glass Header */}
+      {/* Header */}
       <header className="bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-4">
           
@@ -134,7 +147,7 @@ export default function RosterApp() {
       {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 relative z-10 flex flex-col">
         
-        {/* Notice Box */}
+        {/* Director Announcement */}
         {data?.info?.notes && (
           <div className="mb-6 p-4 bg-red-50/80 border-l-4 border-l-starz-red border border-red-200/80 rounded-r-2xl text-slate-800 text-xs sm:text-sm flex items-start gap-3.5 shadow-sm">
             <AlertCircle className="w-5 h-5 text-starz-red shrink-0 mt-0.5" />
@@ -145,7 +158,7 @@ export default function RosterApp() {
           </div>
         )}
 
-        {/* TEAM SELECTION BUTTONS BAR */}
+        {/* TEAM BUTTONS BAR */}
         {!loading && !error && allTeams.length > 0 && (
           <div className="mb-6 no-print">
             <label className="text-[11px] font-black tracking-[0.2em] text-slate-500 uppercase block mb-3">
@@ -186,7 +199,7 @@ export default function RosterApp() {
           <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
-            placeholder="Search any player name or jersey number across teams..."
+            placeholder="Search player name, number, position, or school..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-white border border-slate-300 focus:border-starz-blue rounded-2xl pl-12 pr-4 py-3 text-sm sm:text-base text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-starz-blue/15 transition-all shadow-sm font-semibold"
@@ -243,17 +256,18 @@ export default function RosterApp() {
                 {filteredPlayers.map((player, idx) => (
                   <div
                     key={idx}
-                    className="bg-white border border-slate-200 rounded-3xl p-6 flex flex-col justify-between shadow-sm hover:border-starz-blue hover:shadow-md hover:-translate-y-1 transition-all duration-200 group relative overflow-hidden min-h-[160px]"
+                    className="bg-white border border-slate-200 rounded-3xl p-6 flex flex-col justify-between shadow-sm hover:border-starz-blue hover:shadow-md hover:-translate-y-1 transition-all duration-200 group relative overflow-hidden min-h-[190px]"
                   >
                     {/* Background Jersey Watermark */}
                     {player.number && (
-                      <div className="absolute -right-2 -bottom-4 text-7xl font-black italic text-slate-100 pointer-events-none select-none group-hover:text-blue-50 transition-colors">
+                      <div className="absolute -right-2 -bottom-4 text-7xl font-black italic text-slate-100 pointer-events-none select-none group-hover:text-blue-50 transition-colors z-0">
                         #{player.number}
                       </div>
                     )}
 
-                    {/* Top Row: Jersey Box */}
-                    <div className="flex justify-between items-start mb-4">
+                    {/* Top Row: Jersey Badge (Left) & Player Photo (Right) */}
+                    <div className="flex justify-between items-start mb-4 relative z-10">
+                      {/* Jersey Number Badge */}
                       {player.number ? (
                         <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-starz-red to-red-700 text-white font-black text-xl flex items-center justify-center shadow-md shadow-starz-red/20 border border-red-500 group-hover:scale-105 transition-transform">
                           #{player.number}
@@ -261,13 +275,45 @@ export default function RosterApp() {
                       ) : (
                         <div />
                       )}
+
+                      {/* Top Right Photo */}
+                      {player.photoUrl ? (
+                        <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-slate-200 shadow-md bg-slate-100 group-hover:border-starz-blue transition-colors">
+                          <img 
+                            src={player.photoUrl} 
+                            alt={player.name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => { e.target.parentElement.style.display = 'none'; }}
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-12 h-12 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-300">
+                          <User className="w-6 h-6" />
+                        </div>
+                      )}
                     </div>
 
-                    {/* Player Name Box */}
+                    {/* Player Info Box */}
                     <div className="mt-auto relative z-10">
                       <h3 className="text-2xl sm:text-3xl font-black italic text-starz-navy tracking-wide uppercase leading-tight group-hover:text-starz-blue transition-colors">
                         {player.name}
                       </h3>
+
+                      {/* Position & School Details */}
+                      {(player.position || player.school) && (
+                        <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                          {player.position && (
+                            <span className="text-starz-red bg-red-50 px-2 py-0.5 rounded border border-red-100">
+                              {player.position}
+                            </span>
+                          )}
+                          {player.school && (
+                            <span className="text-slate-600">
+                              {player.school}
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     {/* Bottom Card Accent Bar */}
