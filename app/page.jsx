@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Search, Calendar, MapPin, Trophy, Users, AlertCircle, Star, Zap, User } from 'lucide-react';
+import { Search, Calendar, Trophy, Users, AlertCircle, Star, User } from 'lucide-react';
 
 export default function RosterApp() {
   const [data, setData] = useState(null);
@@ -96,48 +96,47 @@ export default function RosterApp() {
 
       {/* Header */}
       <header className="bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
           
-          <div className="flex items-center gap-4">
-            {/* Club Logo from Google Drive */}
+          <div className="flex items-center gap-4 sm:gap-5">
+            {/* Club Logo */}
             <div className="relative group shrink-0">
               <img 
                 src="https://lh3.googleusercontent.com/d/19utlcn7Lv7jpfbHXnJCLB1dDf3-Rywzv" 
                 alt="MCW Starz Logo" 
-                className="w-14 h-14 object-contain drop-shadow-md group-hover:scale-105 transition-transform"
+                className="w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-md group-hover:scale-105 transition-transform"
                 onError={(e) => {
                   e.target.style.display = 'none';
                   e.target.nextSibling.style.display = 'flex';
                 }}
               />
-              <div className="hidden w-14 h-14 rounded-2xl bg-starz-navy text-white items-center justify-center font-black text-xl border border-slate-200 shadow-sm">
+              <div className="hidden w-16 h-16 rounded-2xl bg-starz-navy text-white items-center justify-center font-black text-xl border border-slate-200 shadow-sm">
                 STARZ
               </div>
             </div>
 
             <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-black tracking-[0.2em] text-starz-red uppercase bg-red-50 px-2.5 py-0.5 rounded-full border border-red-200 flex items-center gap-1">
-                  <Zap className="w-3 h-3 fill-starz-red" /> MCW STARZ BASKETBALL
-                </span>
-              </div>
-              <h1 className="text-2xl sm:text-3xl font-black italic tracking-tight text-starz-navy mt-0.5 uppercase">
-                {data?.info?.tournamentName || "TOURNAMENT ROSTERS"}
+              {/* Prominent Header Title */}
+              <h1 className="text-xl sm:text-3xl font-black italic tracking-tight text-starz-red uppercase">
+                MCW Starz Tournament Rosters
               </h1>
-              <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-slate-600 mt-0.5 font-semibold">
-                {data?.info?.dates && (
-                  <span className="flex items-center gap-1.5">
-                    <Calendar className="w-3.5 h-3.5 text-starz-blue" />
+
+              {/* Tournament Name from Sheet */}
+              {data?.info?.tournamentName && (
+                <div className="text-base sm:text-xl font-extrabold text-starz-navy tracking-wide uppercase mt-0.5">
+                  {data.info.tournamentName}
+                </div>
+              )}
+
+              {/* Large Prominent Event Dates */}
+              {data?.info?.dates && (
+                <div className="flex items-center gap-2 mt-1.5 bg-slate-100 px-3 py-1 rounded-xl border border-slate-200 w-fit">
+                  <Calendar className="w-5 h-5 text-starz-blue shrink-0" />
+                  <span className="text-xs sm:text-sm font-black text-slate-800 tracking-wider">
                     {data.info.dates}
                   </span>
-                )}
-                {data?.info?.location && (
-                  <span className="flex items-center gap-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-starz-red" />
-                    {data.info.location}
-                  </span>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </div>
 
