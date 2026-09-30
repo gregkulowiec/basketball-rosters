@@ -99,10 +99,10 @@ export default function RosterApp() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-4">
           
           <div className="flex items-center gap-4">
-            {/* Club Logo */}
+            {/* Club Logo from Google Drive */}
             <div className="relative group shrink-0">
               <img 
-                src="/logo.png" 
+                src="https://lh3.googleusercontent.com/d/19utlcn7Lv7jpfbHXnJCLB1dDf3-Rywzv" 
                 alt="MCW Starz Logo" 
                 className="w-14 h-14 object-contain drop-shadow-md group-hover:scale-105 transition-transform"
                 onError={(e) => {
