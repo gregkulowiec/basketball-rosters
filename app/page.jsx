@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Search, Calendar, MapPin, RefreshCw, Trophy, Users, AlertCircle, Share2, Printer, Star, ChevronRight, Zap } from 'lucide-react';
+import { Search, Calendar, MapPin, RefreshCw, Trophy, Users, AlertCircle, Share2, Printer, Star, Zap, User } from 'lucide-react';
 
 export default function RosterApp() {
   const [data, setData] = useState(null);
-  const [selectedGrade, setSelectedGrade] = useState('All');
+  const [activeTeamId, setActiveTeamId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -21,13 +21,18 @@ export default function RosterApp() {
         throw new Error("API URL is not configured. Please set NEXT_PUBLIC_SHEETS_API_URL.");
       }
 
-      // Append a timestamp to bypass browser and server caching
+      // Bypass browser & server caching
       const cacheBusterUrl = `${baseUrl}${baseUrl.includes('?') ? '&' : '?'}_t=${Date.now()}`;
 
       const res = await fetch(cacheBusterUrl, { cache: 'no-store' });
       if (!res.ok) throw new Error("Failed to fetch schedule and roster data.");
       const json = await res.json();
       setData(json);
+
+      // Default to selecting the first team automatically
+      if (json?.teams && json.teams.length > 0 && !activeTeamId) {
+        setActiveTeamId(json.teams[0].id);
+      }
     } catch (err) {
       console.error(err);
       setError(err.message || "Could not load rosters.");
@@ -58,35 +63,49 @@ export default function RosterApp() {
   };
 
   const allTeams = data?.teams || [];
-  const grades = ['All', ...Array.from(new Set(allTeams.map(t => t.grade))).sort()];
 
-  const filteredTeams = allTeams.filter(team => {
-    const matchesGrade = selectedGrade === 'All' || team.grade === selectedGrade;
-    if (!matchesGrade) return false;
+  // Find currently selected team
+  const selectedTeam = allTeams.find(t => t.id === activeTeamId) || allTeams[0];
 
-    if (!searchQuery.trim()) return true;
-
+  // Auto-switch team if search matches a player on a different team
+  useEffect(() => {
+    if (!searchQuery.trim() || !allTeams.length) return;
     const query = searchQuery.toLowerCase();
-    const matchesTeamName = team.name.toLowerCase().includes(query);
-    const matchesPlayer = team.players.some(p => 
+    
+    // Check if player exists in current team first
+    const matchInCurrent = selectedTeam?.players?.some(p => 
       p.name.toLowerCase().includes(query) || (p.number && p.number.toString().includes(query))
     );
 
-    return matchesTeamName || matchesPlayer;
-  });
+    if (!matchInCurrent) {
+      const foundTeam = allTeams.find(team => 
+        team.players.some(p => p.name.toLowerCase().includes(query) || (p.number && p.number.toString().includes(query)))
+      );
+      if (foundTeam) {
+        setActiveTeamId(foundTeam.id);
+      }
+    }
+  }, [searchQuery]);
+
+  // Filter players on the selected team based on search query
+  const filteredPlayers = selectedTeam?.players?.filter(player => {
+    if (!searchQuery.trim()) return true;
+    const query = searchQuery.toLowerCase();
+    return player.name.toLowerCase().includes(query) || (player.number && player.number.toString().includes(query));
+  }) || [];
 
   return (
-    <div className="min-h-screen bg-[#070b14] text-slate-100 flex flex-col font-sans selection:bg-starz-red selection:text-white relative overflow-x-hidden">
+    <div className="min-h-screen bg-[#060a12] text-slate-100 flex flex-col font-sans selection:bg-starz-red selection:text-white relative overflow-x-hidden">
       
-      {/* Background Ambient Lighting Effects */}
-      <div className="fixed top-0 left-1/4 w-[500px] h-[500px] bg-starz-blue/15 rounded-full blur-[140px] pointer-events-none z-0" />
-      <div className="fixed top-1/3 right-10 w-[400px] h-[400px] bg-starz-red/10 rounded-full blur-[140px] pointer-events-none z-0" />
+      {/* Background Ambient Glows */}
+      <div className="fixed top-0 left-1/3 w-[600px] h-[600px] bg-starz-blue/15 rounded-full blur-[150px] pointer-events-none z-0" />
+      <div className="fixed top-1/2 right-10 w-[500px] h-[500px] bg-starz-red/10 rounded-full blur-[150px] pointer-events-none z-0" />
       
-      {/* Top Metallic Accent Stripe */}
+      {/* Top Metallic Stripe */}
       <div className="h-1.5 bg-gradient-to-r from-starz-red via-blue-500 to-starz-red z-40 relative no-print shadow-[0_0_15px_rgba(216,35,42,0.6)]" />
 
-      {/* Main Glassmorphism Header */}
-      <header className="bg-[#0b1222]/80 backdrop-blur-md border-b border-slate-800/80 sticky top-0 z-30 shadow-2xl">
+      {/* Main Glass Header */}
+      <header className="bg-[#0a1120]/80 backdrop-blur-md border-b border-slate-800/80 sticky top-0 z-30 shadow-2xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative z-10">
           
           <div className="flex items-center gap-4">
@@ -151,12 +170,12 @@ export default function RosterApp() {
         </div>
       </header>
 
-      {/* Main Content Body */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 relative z-10">
+      {/* Main Container */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 relative z-10 flex flex-col">
         
         {/* Notice Box */}
         {data?.info?.notes && (
-          <div className="mb-8 p-4 bg-gradient-to-r from-slate-900/90 to-[#111c35]/90 border-l-4 border-l-starz-red border border-slate-800 rounded-r-2xl text-slate-200 text-xs sm:text-sm flex items-start gap-3.5 shadow-2xl backdrop-blur-md">
+          <div className="mb-6 p-4 bg-gradient-to-r from-slate-900/90 to-[#111c35]/90 border-l-4 border-l-starz-red border border-slate-800 rounded-r-2xl text-slate-200 text-xs sm:text-sm flex items-start gap-3.5 shadow-2xl backdrop-blur-md">
             <AlertCircle className="w-5 h-5 text-starz-red shrink-0 mt-0.5" />
             <div>
               <span className="font-black text-starz-red uppercase tracking-widest text-[11px] block mb-0.5">DIRECTOR ANNOUNCEMENT</span>
@@ -165,37 +184,52 @@ export default function RosterApp() {
           </div>
         )}
 
-        {/* Search & Athletic Tab Controls */}
-        <div className="flex flex-col lg:flex-row gap-4 mb-10 no-print">
-          
-          {/* Search Input */}
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search player name or jersey #..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-[#0d1628]/90 border border-slate-800 focus:border-starz-blue rounded-2xl pl-11 pr-4 py-3.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-4 focus:ring-starz-blue/20 transition-all shadow-inner font-medium"
-            />
+        {/* TEAM SELECTION BUTTONS BAR */}
+        {!loading && !error && allTeams.length > 0 && (
+          <div className="mb-6 no-print">
+            <label className="text-[11px] font-black tracking-[0.2em] text-slate-400 uppercase block mb-3">
+              SELECT TEAM TO VIEW ROSTER:
+            </label>
+            <div className="flex items-center gap-2.5 overflow-x-auto pb-3 scrollbar-none">
+              {allTeams.map((team) => {
+                const isSelected = selectedTeam?.id === team.id;
+                return (
+                  <button
+                    key={team.id}
+                    onClick={() => {
+                      setActiveTeamId(team.id);
+                      setSearchQuery('');
+                    }}
+                    className={`px-5 py-3.5 rounded-2xl text-xs sm:text-sm font-black uppercase tracking-wider whitespace-nowrap transition-all duration-200 flex items-center gap-2.5 shadow-md active:scale-95 ${
+                      isSelected
+                        ? 'bg-gradient-to-r from-starz-red to-red-700 text-white shadow-lg shadow-starz-red/35 border-2 border-red-400/60 scale-105 z-10'
+                        : 'bg-[#0e172a]/90 text-slate-300 hover:bg-slate-800 hover:text-white border border-slate-800'
+                    }`}
+                  >
+                    <Trophy className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-starz-blue'}`} />
+                    {team.name}
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                      isSelected ? 'bg-black/30 text-white' : 'bg-slate-800 text-slate-400'
+                    }`}>
+                      {team.players.length}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
+        )}
 
-          {/* Division Filter Pills */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 lg:pb-0 scrollbar-none">
-            {grades.map((grade) => (
-              <button
-                key={grade}
-                onClick={() => setSelectedGrade(grade)}
-                className={`px-5 py-3.5 rounded-2xl text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all duration-200 flex items-center gap-2 ${
-                  selectedGrade === grade
-                    ? 'bg-gradient-to-r from-starz-red to-red-700 text-white shadow-lg shadow-starz-red/35 border border-red-400/40 scale-105'
-                    : 'bg-[#0d1628]/90 text-slate-400 hover:bg-slate-800 hover:text-slate-200 border border-slate-800/80'
-                }`}
-              >
-                {grade === 'All' ? 'ALL TEAMS' : `${grade} DIVISION`}
-              </button>
-            ))}
-          </div>
+        {/* SEARCH BAR */}
+        <div className="relative mb-8 no-print">
+          <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Search any player name or jersey number across teams..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-[#0e172a]/90 border border-slate-800 focus:border-starz-blue rounded-2xl pl-12 pr-4 py-3.5 text-sm sm:text-base text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-4 focus:ring-starz-blue/20 transition-all shadow-inner font-medium"
+          />
         </div>
 
         {/* Loading State */}
@@ -205,7 +239,7 @@ export default function RosterApp() {
               <div className="w-16 h-16 rounded-full border-4 border-slate-800 border-t-starz-red animate-spin" />
               <Star className="w-6 h-6 fill-starz-blue text-starz-blue absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
             </div>
-            <p className="text-sm font-black tracking-widest uppercase text-slate-300">SYNCING LIVE ROSTERS...</p>
+            <p className="text-sm font-black tracking-widest uppercase text-slate-300">LOADING ROSTER CARDS...</p>
           </div>
         )}
 
@@ -218,75 +252,83 @@ export default function RosterApp() {
           </div>
         )}
 
-        {/* Pro Athlete Cards Grid */}
-        {!loading && !error && (
-          filteredTeams.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredTeams.map((team) => (
-                <div 
-                  key={team.id}
-                  className="bg-gradient-to-b from-[#0d1628] to-[#090e1a] border border-slate-800/90 rounded-3xl overflow-hidden flex flex-col shadow-2xl hover:border-starz-blue/60 transition-all duration-300 group hover:-translate-y-1"
-                >
-                  {/* Card Team Header */}
-                  <div className="bg-gradient-to-r from-[#0e1b38] via-[#091122] to-[#121c33] px-6 py-5 border-b border-slate-800/80 flex justify-between items-center relative overflow-hidden">
-                    <div className="absolute -top-10 -right-10 w-28 h-28 bg-starz-blue/15 rounded-full blur-2xl pointer-events-none" />
-                    <div>
-                      <span className="text-[10px] font-black tracking-widest text-starz-red uppercase bg-starz-red/10 px-2 py-0.5 rounded border border-starz-red/20 inline-block mb-1">
-                        {team.grade} DIVISION
+        {/* FOCUSED TEAM ROSTER VIEW */}
+        {!loading && !error && selectedTeam && (
+          <div className="flex-1 flex flex-col">
+            
+            {/* Team Banner Header */}
+            <div className="bg-gradient-to-r from-[#0c1836] via-[#0a1224] to-[#121f40] border border-slate-800 rounded-3xl p-6 mb-8 shadow-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-starz-blue/10 rounded-full blur-3xl pointer-events-none" />
+              <div>
+                <span className="text-xs font-black tracking-widest text-starz-red uppercase bg-starz-red/10 px-3 py-1 rounded-full border border-starz-red/20 inline-block mb-2">
+                  OFFICIAL WEEKEND ROSTER
+                </span>
+                <h2 className="text-3xl sm:text-4xl font-black italic text-white tracking-wide uppercase">
+                  {selectedTeam.name}
+                </h2>
+              </div>
+              
+              <div className="flex items-center gap-2 bg-[#060a12] px-4 py-2 rounded-2xl border border-slate-800 shadow-inner">
+                <Users className="w-5 h-5 text-starz-red" />
+                <span className="text-sm font-black text-white tracking-wide">
+                  {filteredPlayers.length} {filteredPlayers.length === 1 ? 'PLAYER' : 'PLAYERS'} ON ROSTER
+                </span>
+              </div>
+            </div>
+
+            {/* PLAYER CARDS GRID */}
+            {filteredPlayers.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {filteredPlayers.map((player, idx) => (
+                  <div
+                    key={idx}
+                    className="bg-gradient-to-b from-[#0f1b33] to-[#0a1120] border border-slate-800/90 rounded-3xl p-6 flex flex-col justify-between shadow-xl hover:border-starz-blue hover:shadow-starz-blue/20 hover:-translate-y-1.5 transition-all duration-300 group relative overflow-hidden"
+                  >
+                    {/* Background Metallic Jersey Watermark */}
+                    <div className="absolute -right-4 -bottom-6 text-7xl font-black italic text-slate-800/15 pointer-events-none select-none group-hover:text-starz-blue/10 transition-colors">
+                      {player.number ? `#${player.number}` : 'MCW'}
+                    </div>
+
+                    {/* Top Badge & Jersey # */}
+                    <div className="flex justify-between items-start mb-6">
+                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-starz-red via-red-600 to-red-800 text-white font-black text-2xl flex items-center justify-center shadow-lg shadow-starz-red/30 border border-red-400/40 group-hover:scale-110 transition-transform">
+                        {player.number ? `#${player.number}` : '—'}
+                      </div>
+                      <span className="px-2.5 py-1 rounded-lg bg-[#060a12] text-[10px] font-black tracking-widest text-starz-blue uppercase border border-slate-800">
+                        STARZ ATHLETE
                       </span>
-                      <h3 className="font-black italic text-white text-xl tracking-wide uppercase group-hover:text-starz-blue transition-colors">
-                        {team.name}
+                    </div>
+
+                    {/* Player Name Box */}
+                    <div className="mt-auto relative z-10">
+                      <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1">
+                        <User className="w-3 h-3 text-starz-red" /> ROSTER ATHLETE
+                      </div>
+                      <h3 className="text-xl sm:text-2xl font-black italic text-white tracking-wide uppercase leading-tight group-hover:text-starz-blue transition-colors">
+                        {player.name}
                       </h3>
                     </div>
-                    <div className="flex items-center gap-1.5 bg-[#050912] px-3.5 py-1.5 rounded-full text-xs font-black text-slate-200 border border-slate-800 shadow-inner">
-                      <Users className="w-3.5 h-3.5 text-starz-red" />
-                      {team.players.length}
-                    </div>
-                  </div>
 
-                  {/* Player Roster List */}
-                  <div className="p-5 flex-1 space-y-2.5">
-                    {team.players.map((player, idx) => (
-                      <div
-                        key={idx}
-                        className="flex items-center justify-between p-3 rounded-2xl bg-[#080d18]/90 hover:bg-[#101b30] transition-all duration-200 border border-slate-800/60 hover:border-starz-blue/40 shadow-sm group/player"
-                      >
-                        <div className="flex items-center gap-3.5">
-                          {/* Jersey Number Box */}
-                          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-starz-red to-red-800 text-white font-black text-base flex items-center justify-center shrink-0 shadow-md shadow-starz-red/20 border border-red-400/30 group-hover/player:scale-110 transition-transform">
-                            {player.number ? `#${player.number}` : '—'}
-                          </div>
-                          <div>
-                            <span className="text-sm font-bold text-slate-100 group-hover/player:text-white transition-colors block">
-                              {player.name}
-                            </span>
-                            <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">
-                              PLAYER
-                            </span>
-                          </div>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-slate-700 group-hover/player:text-starz-blue group-hover/player:translate-x-1 transition-all" />
-                      </div>
-                    ))}
+                    {/* Bottom Card Border Glow */}
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-starz-blue/50 to-transparent group-hover:via-starz-red transition-all" />
                   </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-20 bg-[#0c1629]/50 rounded-3xl border border-slate-800 backdrop-blur-md">
+                <Users className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+                <h3 className="text-base font-black text-slate-300 uppercase tracking-wider">NO PLAYERS MATCH YOUR SEARCH</h3>
+                <p className="text-xs text-slate-500 mt-1 font-medium">Clear your search query to view all players on this team.</p>
+              </div>
+            )}
 
-                  {/* Card Bottom Accent Line */}
-                  <div className="h-1 bg-gradient-to-r from-transparent via-starz-blue/40 to-transparent group-hover:via-starz-red/80 transition-all" />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-24 bg-[#0d1628]/40 rounded-3xl border border-slate-800/80 backdrop-blur-md">
-              <Users className="w-14 h-14 text-slate-600 mx-auto mb-4" />
-              <h3 className="text-base font-black text-slate-300 uppercase tracking-widest">NO TEAMS OR PLAYERS MATCH YOUR SEARCH</h3>
-              <p className="text-xs text-slate-500 mt-1 font-medium">Try resetting your search query or grade filter.</p>
-            </div>
-          )
+          </div>
         )}
+
       </main>
 
-      {/* Pro Sports Footer */}
-      <footer className="bg-[#050810] border-t border-slate-800/80 py-8 px-4 text-center text-xs text-slate-500 mt-auto no-print relative z-10">
+      {/* Footer */}
+      <footer className="bg-[#04070d] border-t border-slate-800/80 py-8 px-4 text-center text-xs text-slate-500 mt-auto no-print relative z-10">
         <div className="flex items-center justify-center gap-2 mb-2">
           <Star className="w-3.5 h-3.5 fill-starz-red text-starz-red" />
           <span className="font-black text-slate-400 uppercase tracking-[0.2em] text-[11px]">MCW STARZ BASKETBALL PLATFORM</span>
