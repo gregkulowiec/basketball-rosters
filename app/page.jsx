@@ -15,13 +15,16 @@ export default function RosterApp() {
     setLoading(true);
     setError(null);
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_SHEETS_API_URL;
+      const baseUrl = process.env.NEXT_PUBLIC_SHEETS_API_URL;
 
-      if (!apiUrl) {
+      if (!baseUrl) {
         throw new Error("API URL is not configured. Please set NEXT_PUBLIC_SHEETS_API_URL.");
       }
 
-      const res = await fetch(apiUrl);
+      // Append a timestamp to bypass browser and server caching
+      const cacheBusterUrl = `${baseUrl}${baseUrl.includes('?') ? '&' : '?'}_t=${Date.now()}`;
+
+      const res = await fetch(cacheBusterUrl, { cache: 'no-store' });
       if (!res.ok) throw new Error("Failed to fetch schedule and roster data.");
       const json = await res.json();
       setData(json);
