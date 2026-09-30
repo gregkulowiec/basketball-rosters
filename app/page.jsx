@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Search, Calendar, MapPin, RefreshCw, Trophy, Users, AlertCircle, Share2, Printer } from 'lucide-react';
+import { Search, Calendar, MapPin, RefreshCw, Trophy, Users, AlertCircle, Share2, Printer, Star } from 'lucide-react';
 
 export default function RosterApp() {
   const [data, setData] = useState(null);
@@ -40,7 +40,7 @@ export default function RosterApp() {
   const handleShare = () => {
     if (navigator.share) {
       navigator.share({
-        title: data?.info?.tournamentName || 'Basketball Rosters',
+        title: data?.info?.tournamentName || 'MCW Starz Rosters',
         url: window.location.href,
       }).catch(() => {});
     } else {
@@ -73,28 +73,36 @@ export default function RosterApp() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col font-sans">
-      {/* Header Banner */}
-      <header className="bg-slate-800 border-b border-slate-700 sticky top-0 z-30 shadow-md">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-starz-red selection:text-white">
+      {/* Top Brand Accent Bar */}
+      <div className="h-2 bg-gradient-to-r from-starz-red via-starz-blue to-starz-red no-print" />
+
+      {/* Main Header Banner */}
+      <header className="bg-starz-navy border-b border-starz-blue/30 sticky top-0 z-30 shadow-xl shadow-black/50">
         <div className="max-w-6xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-orange-600 rounded-xl text-white shadow-lg shadow-orange-600/30">
-              <Trophy className="w-6 h-6" />
+          <div className="flex items-center gap-3.5">
+            <div className="p-2.5 bg-starz-red rounded-xl text-white shadow-lg shadow-starz-red/40 border border-red-400/30 flex items-center justify-center shrink-0">
+              <Star className="w-6 h-6 fill-white text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold tracking-tight text-white">
-                {data?.info?.tournamentName || "Club Basketball Rosters"}
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-black tracking-widest text-starz-red uppercase bg-red-950/60 px-2 py-0.5 rounded border border-starz-red/30">
+                  MCW STARZ BASKETBALL
+                </span>
+              </div>
+              <h1 className="text-xl font-extrabold tracking-tight text-white mt-0.5">
+                {data?.info?.tournamentName || "Tournament Rosters"}
               </h1>
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-400 mt-1">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-300 mt-1">
                 {data?.info?.dates && (
-                  <span className="flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5 text-orange-400" />
+                  <span className="flex items-center gap-1 font-medium">
+                    <Calendar className="w-3.5 h-3.5 text-starz-blue" />
                     {data.info.dates}
                   </span>
                 )}
                 {data?.info?.location && (
-                  <span className="flex items-center gap-1">
-                    <MapPin className="w-3.5 h-3.5 text-orange-400" />
+                  <span className="flex items-center gap-1 font-medium">
+                    <MapPin className="w-3.5 h-3.5 text-starz-red" />
                     {data.info.location}
                   </span>
                 )}
@@ -105,14 +113,14 @@ export default function RosterApp() {
           <div className="flex items-center gap-2 no-print w-full sm:w-auto justify-end">
             <button
               onClick={handleShare}
-              className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5"
+              className="px-3.5 py-2 bg-starz-blue hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-starz-blue/30 flex items-center gap-1.5"
             >
               <Share2 className="w-3.5 h-3.5" />
               {copied ? "Copied Link!" : "Share"}
             </button>
             <button
               onClick={handlePrint}
-              className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5"
+              className="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl border border-slate-700 transition-all flex items-center gap-1.5"
             >
               <Printer className="w-3.5 h-3.5" />
               Print
@@ -120,7 +128,7 @@ export default function RosterApp() {
             <button
               onClick={fetchData}
               disabled={loading}
-              className="p-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg transition-all disabled:opacity-50"
+              className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700 transition-all disabled:opacity-50"
               title="Refresh Data"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -129,13 +137,14 @@ export default function RosterApp() {
         </div>
       </header>
 
-      {/* Main Content */}
+      {/* Main Content Body */}
       <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-6">
+        {/* Notice Box */}
         {data?.info?.notes && (
-          <div className="mb-6 p-4 bg-orange-950/40 border border-orange-500/30 rounded-xl text-orange-200 text-xs sm:text-sm flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-orange-400 shrink-0 mt-0.5" />
+          <div className="mb-6 p-4 bg-starz-navy/80 border-l-4 border-l-starz-red border border-starz-blue/30 rounded-r-xl text-slate-200 text-xs sm:text-sm flex items-start gap-3 shadow-lg">
+            <AlertCircle className="w-5 h-5 text-starz-red shrink-0 mt-0.5" />
             <div>
-              <span className="font-semibold text-orange-300">Director's Note: </span>
+              <span className="font-bold text-white uppercase tracking-wider text-xs block mb-0.5">Director's Update</span>
               {data.info.notes}
             </div>
           </div>
@@ -150,22 +159,22 @@ export default function RosterApp() {
               placeholder="Search player name or jersey number..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-slate-800/90 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full bg-slate-900 border border-slate-800 focus:border-starz-blue rounded-xl pl-10 pr-4 py-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-starz-blue/40 transition-all"
             />
           </div>
 
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-2 md:pb-0 scrollbar-none">
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-none">
             {grades.map((grade) => (
               <button
                 key={grade}
                 onClick={() => setSelectedGrade(grade)}
-                className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+                className={`px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all ${
                   selectedGrade === grade
-                    ? 'bg-orange-600 text-white shadow-md shadow-orange-600/20'
-                    : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200 border border-slate-700/50'
+                    ? 'bg-starz-red text-white shadow-lg shadow-starz-red/30 border border-red-400/30'
+                    : 'bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-slate-200 border border-slate-800'
                 }`}
               >
-                {grade === 'All' ? 'All Teams' : `${grade} Grade`}
+                {grade === 'All' ? 'All Teams' : `${grade} Division`}
               </button>
             ))}
           </div>
@@ -173,18 +182,18 @@ export default function RosterApp() {
 
         {/* Loading State */}
         {loading && (
-          <div className="flex flex-col items-center justify-center py-16 text-slate-400">
-            <RefreshCw className="w-8 h-8 animate-spin text-orange-500 mb-3" />
-            <p className="text-sm font-medium">Loading tournament rosters...</p>
+          <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+            <RefreshCw className="w-10 h-10 animate-spin text-starz-red mb-3" />
+            <p className="text-sm font-bold tracking-wider uppercase text-slate-300">Loading Starz Rosters...</p>
           </div>
         )}
 
         {/* Error State */}
         {error && !loading && (
-          <div className="bg-red-950/40 border border-red-500/30 rounded-xl p-6 text-center max-w-md mx-auto my-12">
-            <AlertCircle className="w-10 h-10 text-red-400 mx-auto mb-3" />
-            <h3 className="text-base font-semibold text-red-200">Rosters Unavailable</h3>
-            <p className="text-xs text-red-300/80 mt-1">{error}</p>
+          <div className="bg-red-950/40 border border-red-600/40 rounded-2xl p-8 text-center max-w-md mx-auto my-12 shadow-2xl">
+            <AlertCircle className="w-12 h-12 text-starz-red mx-auto mb-3" />
+            <h3 className="text-base font-bold text-white">Rosters Unavailable</h3>
+            <p className="text-xs text-slate-300 mt-1">{error}</p>
           </div>
         )}
 
@@ -195,31 +204,39 @@ export default function RosterApp() {
               {filteredTeams.map((team) => (
                 <div 
                   key={team.id}
-                  className="bg-slate-800/80 border border-slate-700/70 rounded-2xl overflow-hidden flex flex-col shadow-lg"
+                  className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden flex flex-col shadow-xl hover:border-starz-blue/50 transition-all group"
                 >
-                  <div className="bg-slate-700/60 px-5 py-3.5 border-b border-slate-700 flex justify-between items-center">
+                  {/* Card Team Header */}
+                  <div className="bg-gradient-to-r from-starz-navy to-slate-900 px-5 py-4 border-b border-slate-800 flex justify-between items-center relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-starz-blue/10 rounded-full blur-xl pointer-events-none" />
                     <div>
-                      <h3 className="font-bold text-slate-100 text-base">{team.name}</h3>
-                      <span className="text-xs text-orange-400 font-medium">{team.grade} Grade Division</span>
+                      <h3 className="font-black text-white text-lg tracking-wide uppercase group-hover:text-starz-red transition-colors">
+                        {team.name}
+                      </h3>
+                      <span className="text-xs font-semibold text-starz-blue uppercase tracking-widest block mt-0.5">
+                        {team.grade} Division
+                      </span>
                     </div>
-                    <div className="flex items-center gap-1.5 bg-slate-800 px-2.5 py-1 rounded-full text-xs font-semibold text-slate-300 border border-slate-600">
-                      <Users className="w-3.5 h-3.5 text-slate-400" />
+                    <div className="flex items-center gap-1.5 bg-slate-950 px-3 py-1 rounded-full text-xs font-black text-white border border-slate-800 shadow-inner">
+                      <Users className="w-3.5 h-3.5 text-starz-red" />
                       {team.players.length}
                     </div>
                   </div>
 
-                  <div className="p-4 flex-1">
+                  {/* Player Roster List */}
+                  <div className="p-4 flex-1 bg-slate-950/40">
                     <div className="space-y-2">
                       {team.players.map((player, idx) => (
                         <div
                           key={idx}
-                          className="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/40 hover:bg-slate-900/80 transition-all border border-slate-700/30"
+                          className="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 transition-all border border-slate-800/80 hover:border-starz-blue/40"
                         >
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-orange-500/10 border border-orange-500/20 text-orange-400 font-bold text-xs flex items-center justify-center shrink-0">
+                            {/* Jersey Number Box */}
+                            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-starz-blue to-starz-navy text-white font-black text-sm flex items-center justify-center shrink-0 shadow-md border border-blue-400/20">
                               {player.number ? `#${player.number}` : '—'}
                             </div>
-                            <span className="text-sm font-semibold text-slate-200">{player.name}</span>
+                            <span className="text-sm font-bold text-slate-100">{player.name}</span>
                           </div>
                         </div>
                       ))}
@@ -229,18 +246,23 @@ export default function RosterApp() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-16 bg-slate-800/30 rounded-2xl border border-slate-800">
+            <div className="text-center py-20 bg-slate-900/40 rounded-2xl border border-slate-800">
               <Users className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-              <h3 className="text-sm font-semibold text-slate-300">No teams or players found</h3>
+              <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider">No Teams or Players Found</h3>
               <p className="text-xs text-slate-500 mt-1">Try adjusting your search query or grade filter.</p>
             </div>
           )
         )}
       </main>
 
-      <footer className="bg-slate-950 border-t border-slate-800 py-4 px-4 text-center text-xs text-slate-500 mt-auto no-print">
-        {data?.lastUpdated && <span>Last sync: {data.lastUpdated} • </span>}
-        Club Basketball Roster Platform
+      {/* Footer */}
+      <footer className="bg-slate-950 border-t border-slate-900 py-6 px-4 text-center text-xs text-slate-500 mt-auto no-print">
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <Star className="w-3.5 h-3.5 fill-starz-red text-starz-red" />
+          <span className="font-bold text-slate-400 uppercase tracking-widest text-[10px]">MCW Starz Basketball Roster Hub</span>
+          <Star className="w-3.5 h-3.5 fill-starz-blue text-starz-blue" />
+        </div>
+        {data?.lastUpdated && <span>Last sync: {data.lastUpdated}</span>}
       </footer>
     </div>
   );
